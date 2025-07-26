@@ -20,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import androidx.navigation.NavController
+import androidx.core.content.edit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,9 +65,9 @@ fun StudentMainScreen(rootNavController: NavController) {
                         onClick = {
                             // Tüm tercihleri temizle
                             context.getSharedPreferences("choice_prefs", 0)
-                                .edit()
-                                .clear()
-                                .apply()
+                                .edit {
+                                    clear()
+                                }
 
                             // Login sayfasına yönlendir
                             rootNavController.navigate("login") {
@@ -102,8 +103,8 @@ fun StudentMainScreen(rootNavController: NavController) {
                             selected = selectedItem == index,
                             onClick = {
                                 selectedItem = index
-                                rootNavController.navigate(item.route) {
-                                    popUpTo(rootNavController.graph.startDestinationId) {
+                                localNavController.navigate(item.route) {
+                                    popUpTo(localNavController.graph.startDestinationId) {
                                         saveState = true
                                     }
                                     launchSingleTop = true

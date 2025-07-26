@@ -107,8 +107,8 @@ fun TeacherMainScreen(rootNavController: NavController) {
                             selected = selectedItem == index,
                             onClick = {
                                 selectedItem = index
-                                rootNavController.navigate(item.route) {
-                                    popUpTo(rootNavController.graph.startDestinationId) {
+                                localNavController.navigate(item.route) {
+                                    popUpTo(localNavController.graph.startDestinationId) {
                                         saveState = true
                                     }
                                     launchSingleTop = true
