@@ -36,8 +36,6 @@ class MainActivity : ComponentActivity() {
 fun StajakuluApp() {
     val navController = rememberNavController()
 
-    // TODO: Uygulama yan yatamasın.
-
     NavHost(
         navController = navController,
         startDestination = "login"
@@ -46,10 +44,10 @@ fun StajakuluApp() {
             LoginScreen(navController = navController)
         }
         composable("student_main") {
-            StudentMainScreen(navController = navController)
+            StudentMainScreen(rootNavController = navController)
         }
         composable("teacher_main") {
-            TeacherMainScreen(navController = navController)
+            TeacherMainScreen(rootNavController = navController)
         }
     }
 }

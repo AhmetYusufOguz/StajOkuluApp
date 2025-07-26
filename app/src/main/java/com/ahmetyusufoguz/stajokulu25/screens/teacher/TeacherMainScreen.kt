@@ -23,9 +23,9 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TeacherMainScreen(navController: NavController) {
-    val navController = rememberNavController()
-    var selectedItem by remember { mutableStateOf(1) } // Ana sayfa başlangıç
+fun TeacherMainScreen(rootNavController: NavController) {
+    val localNavController = rememberNavController()
+    var selectedItem by remember { mutableIntStateOf(1) } // Ana sayfa başlangıç
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -74,7 +74,7 @@ fun TeacherMainScreen(navController: NavController) {
                                 .apply()
 
                             // Login sayfasına yönlendir
-                            navController.navigate("login") {
+                            rootNavController.navigate("login") {
                                 popUpTo("teacher_main") { inclusive = true }
                             }
                         }
@@ -107,8 +107,8 @@ fun TeacherMainScreen(navController: NavController) {
                             selected = selectedItem == index,
                             onClick = {
                                 selectedItem = index
-                                navController.navigate(item.route) {
-                                    popUpTo(navController.graph.startDestinationId) {
+                                rootNavController.navigate(item.route) {
+                                    popUpTo(rootNavController.graph.startDestinationId) {
                                         saveState = true
                                     }
                                     launchSingleTop = true
@@ -121,7 +121,7 @@ fun TeacherMainScreen(navController: NavController) {
             }
         ) { innerPadding ->
             NavHost(
-                navController = navController,
+                navController = localNavController,
                 startDestination = "home",
                 modifier = Modifier.padding(innerPadding)
             ) {
