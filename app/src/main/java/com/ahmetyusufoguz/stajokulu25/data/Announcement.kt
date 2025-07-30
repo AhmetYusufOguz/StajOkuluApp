@@ -2,7 +2,6 @@ package com.ahmetyusufoguz.stajokulu25.data
 
 import android.content.Context
 import java.util.UUID
-import androidx.core.content.edit
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 

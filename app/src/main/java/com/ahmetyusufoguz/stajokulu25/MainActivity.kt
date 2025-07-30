@@ -15,10 +15,21 @@ import com.ahmetyusufoguz.stajokulu25.screens.LoginScreen
 import com.ahmetyusufoguz.stajokulu25.screens.student.StudentMainScreen
 import com.ahmetyusufoguz.stajokulu25.screens.teacher.TeacherMainScreen
 import com.ahmetyusufoguz.stajokulu25.ui.theme.Stajakulu25Theme
+import com.ahmetyusufoguz.stajokulu25.config.supabase // Supabase client'ı import ediyoruz
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Supabase client'ı başlatmak için erişiyoruz (lazy initialization)
+        try {
+            // Supabase bağlantısını test ediyoruz
+            supabase
+            println("Supabase bağlantısı başarılı!")
+        } catch (e: Exception) {
+            println("Supabase bağlantı hatası: ${e.message}")
+        }
+
         setContent {
             Stajakulu25Theme {
                 Surface(

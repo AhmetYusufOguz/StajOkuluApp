@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -75,6 +76,19 @@ dependencies {
 
     // SharedPreferences için zaten var olması lazım
     implementation("androidx.preference:preference-ktx:1.2.1")
+
+    // Supabase
+    implementation("io.github.jan-tennert.supabase:supabase-kt:2.0.4")
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.0.4")
+    // implementation("io.github.jan-tennert.supabase:gotrue-kt:2.0.4")
+    // authentication ile ilgili olabilir. çalışmıyordu.
+
+    // Ktor (Supabase'in kullandığı HTTP client)
+    implementation("io.ktor:ktor-client-cio:2.3.7")
+    implementation("io.ktor:ktor-client-core:2.3.7")
+
+    // Kotlinx Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
