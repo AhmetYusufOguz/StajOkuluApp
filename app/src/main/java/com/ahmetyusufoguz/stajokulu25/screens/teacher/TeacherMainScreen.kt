@@ -2,6 +2,7 @@ package com.ahmetyusufoguz.stajokulu25.screens.teacher
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Announcement
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
@@ -31,8 +32,8 @@ fun TeacherMainScreen(rootNavController: NavController) {
     val context = LocalContext.current
 
     val items = listOf(
+        NavigationItem("Duyurular", Icons.Default.Announcement, "home"),
         NavigationItem("Ders Programı", Icons.Default.CalendarToday, "schedule"),
-        NavigationItem("Ana Sayfa", Icons.Default.Home, "home"),
         NavigationItem("Harita", Icons.Default.Restaurant, "map")
     )
 
@@ -122,7 +123,7 @@ fun TeacherMainScreen(rootNavController: NavController) {
         ) { innerPadding ->
             NavHost(
                 navController = localNavController,
-                startDestination = "home",
+                startDestination = "schedule",
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable("schedule") {
