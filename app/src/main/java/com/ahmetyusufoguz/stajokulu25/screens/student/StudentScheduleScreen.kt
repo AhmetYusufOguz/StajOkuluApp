@@ -1,38 +1,181 @@
 package com.ahmetyusufoguz.stajokulu25.screens.student
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ahmetyusufoguz.stajokulu25.data.Lesson
+import com.ahmetyusufoguz.stajokulu25.data.LessonRepository
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.UUID
+
+val days = listOf("Pzt", "Salı", "Çar", "Perş", "Cuma", "Cmt", "Pzr")
 
 @Composable
 fun StudentScheduleScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Ders Programı",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "Ders programı burada görüntülenecek. Öğrenciler sadece görüntüleme yapabilir.",
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+    val weeks = (1..6).toList()
+    var selectedWeek by remember { mutableStateOf(1) }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+
+        // HAFTA SEÇİCİ (sabit butonlar)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp)
+        ) {
+            weeks.forEach { week ->
+                Button(
+                    onClick = { selectedWeek = week },
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 2.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedWeek == week)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Text(
+                        "Hafta $week",
+                        fontSize = 12.sp,
+                        maxLines = 1
+                    )
+                }
+            }
+        }
+
+        // DERS TABLOSU
+        LessonGrid(
+            selectedWeek = selectedWeek,
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = 16.dp)
         )
     }
+}
+
+fun timeToMinutes(time: String): Int {
+    val (hour, minute) = time.split(":").map { it.toInt() }
+    return hour * 60 + minute
+}
+
+@Composable
+fun LessonGrid(selectedWeek: Int, modifier: Modifier = Modifier) {
+    val scrollState = rememberScrollState()
+    val lessons = LessonRepository.dummyLessons.filter { it.week == selectedWeek }
+    val pxPerMin = 1.5f
+    val gridStartMin = 9 * 60
+    val rowHeight = 90.dp
+    val totalWidthDp = ((60 * 11) * pxPerMin).toInt()
+    val verticalScrollState = rememberScrollState()
+
+    var selectedLesson by remember { mutableStateOf<Lesson?>(null) }
+
+    Row(modifier = modifier.horizontalScroll(scrollState)) {
+        Column(modifier = Modifier
+            .verticalScroll(verticalScrollState),
+            verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            days.forEachIndexed { dayIndex, day ->
+                val date = getDateForDay(week = selectedWeek, dayIndex = dayIndex)
+                val lessonsOfDay = lessons.filter { it.day == dayIndex }
+
+                Row(verticalAlignment = Alignment.Top) {
+                    // Gün + Tarih
+                    Box(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(rowHeight)
+                            .border(1.dp, Color.Gray),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("$day\n$date", textAlign = TextAlign.Center)
+                    }
+
+                    // Ders kutuları
+                    Box(
+                        modifier = Modifier
+                            .width(totalWidthDp.dp)
+                            .height(rowHeight)
+                    ) {
+                        lessonsOfDay.forEach { lesson ->
+                            val startMin = timeToMinutes(lesson.begin)
+                            val endMin = timeToMinutes(lesson.end)
+                            val offsetMin = startMin - gridStartMin
+                            val durationMin = endMin - startMin
+                            val leftOffset = offsetMin * pxPerMin
+                            val boxWidth = durationMin * pxPerMin
+
+                            Box(
+                                modifier = Modifier
+                                    .offset(x = leftOffset.dp)
+                                    .width(boxWidth.dp)
+                                    .height(rowHeight)
+                                    .background(Color(0xFFBBDEFB))
+                                    .border(1.dp, Color.Black)
+                                    .clickable { selectedLesson = lesson },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center,
+                                    modifier = Modifier.padding(4.dp)
+                                ) {
+                                    Text(lesson.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                                    Text(lesson.teacherName, style = MaterialTheme.typography.bodySmall)
+                                    Text("${lesson.begin} - ${lesson.end}", style = MaterialTheme.typography.labelSmall)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // POP-UP: Ders detayları
+    selectedLesson?.let { lesson ->
+        AlertDialog(
+            onDismissRequest = { selectedLesson = null },
+            confirmButton = {
+                TextButton(onClick = { selectedLesson = null }) {
+                    Text("Kapat")
+                }
+            },
+            title = { Text(lesson.title) },
+            text = {
+                Column {
+                    Text("Öğretmen: ${lesson.teacherName}")
+                    Text("Zaman: ${lesson.begin} - ${lesson.end}")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Açıklama:\n${lesson.description}")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Tanıtım:\n${lesson.teacherDesc}")
+                }
+            }
+        )
+    }
+}
+
+fun getDateForDay(week: Int, dayIndex: Int): String {
+    val baseDate = LocalDate.of(2025, 6, 30) // 1. haftanın pazartesi
+    val daysToAdd = (week - 1) * 7 + dayIndex
+    val targetDate = baseDate.plusDays(daysToAdd.toLong())
+    return targetDate.format(DateTimeFormatter.ofPattern("d MMM"))
 }

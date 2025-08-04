@@ -27,7 +27,7 @@ import androidx.core.content.edit
 @Composable
 fun StudentMainScreen(rootNavController: NavController) {
     val localNavController = rememberNavController()
-    var selectedItem by remember { mutableIntStateOf(1) } // Ana sayfa başlangıç
+    var selectedItem by remember { mutableIntStateOf(1) } // Ders programı başlangıç
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
