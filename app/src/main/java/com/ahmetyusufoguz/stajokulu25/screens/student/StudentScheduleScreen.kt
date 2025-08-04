@@ -19,9 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ahmetyusufoguz.stajokulu25.data.Lesson
 import com.ahmetyusufoguz.stajokulu25.data.LessonRepository
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.UUID
+import com.ahmetyusufoguz.stajokulu25.data.getDateForDay
 
 val days = listOf("Pzt", "Salı", "Çar", "Perş", "Cuma", "Cmt", "Pzr")
 
@@ -78,72 +76,102 @@ fun timeToMinutes(time: String): Int {
 
 @Composable
 fun LessonGrid(selectedWeek: Int, modifier: Modifier = Modifier) {
-    val scrollState = rememberScrollState()
     val lessons = LessonRepository.dummyLessons.filter { it.week == selectedWeek }
     val pxPerMin = 1.5f
     val gridStartMin = 9 * 60
     val rowHeight = 90.dp
     val totalWidthDp = ((60 * 11) * pxPerMin).toInt()
+
     val verticalScrollState = rememberScrollState()
+    val horizontalScrollState = rememberScrollState()
 
     var selectedLesson by remember { mutableStateOf<Lesson?>(null) }
 
-    Row(modifier = modifier.horizontalScroll(scrollState)) {
-        Column(modifier = Modifier
-            .verticalScroll(verticalScrollState),
-            verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Row(modifier = modifier.fillMaxWidth()) {
+
+        // SOLDA SABİT GÜN + TARİH
+        Column(
+            modifier = Modifier
+                .verticalScroll(verticalScrollState),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
             days.forEachIndexed { dayIndex, day ->
                 val date = getDateForDay(week = selectedWeek, dayIndex = dayIndex)
+                Box(
+                    modifier = Modifier
+                        .width(80.dp)
+                        .height(rowHeight)
+                        .border(1.dp, Color.Gray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("$day\n$date", textAlign = TextAlign.Center)
+                }
+            }
+        }
+
+        // SAĞDA SCROLL EDİLEBİLİR DERSLER
+        Column(
+            modifier = Modifier
+                .verticalScroll(verticalScrollState)
+                .horizontalScroll(horizontalScrollState),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            days.forEachIndexed { dayIndex, _ ->
                 val lessonsOfDay = lessons.filter { it.day == dayIndex }
 
-                Row(verticalAlignment = Alignment.Top) {
-                    // Gün + Tarih
-                    Box(
-                        modifier = Modifier
-                            .width(80.dp)
-                            .height(rowHeight)
-                            .border(1.dp, Color.Gray),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("$day\n$date", textAlign = TextAlign.Center)
-                    }
+                Box(
+                    modifier = Modifier
+                        .width(totalWidthDp.dp)
+                        .height(rowHeight)
+                ) {
+                    lessonsOfDay.forEach { lesson ->
+                        val startMin = timeToMinutes(lesson.begin)
+                        val endMin = timeToMinutes(lesson.end)
+                        val offsetMin = startMin - gridStartMin
+                        val durationMin = endMin - startMin
+                        val leftOffset = offsetMin * pxPerMin
+                        val boxWidth = durationMin * pxPerMin
 
-                    // Ders kutuları
-                    Box(
-                        modifier = Modifier
-                            .width(totalWidthDp.dp)
-                            .height(rowHeight)
-                    ) {
-                        lessonsOfDay.forEach { lesson ->
-                            val startMin = timeToMinutes(lesson.begin)
-                            val endMin = timeToMinutes(lesson.end)
-                            val offsetMin = startMin - gridStartMin
-                            val durationMin = endMin - startMin
-                            val leftOffset = offsetMin * pxPerMin
-                            val boxWidth = durationMin * pxPerMin
-
-                            Box(
-                                modifier = Modifier
-                                    .offset(x = leftOffset.dp)
-                                    .width(boxWidth.dp)
-                                    .height(rowHeight)
-                                    .background(Color(0xFFBBDEFB))
-                                    .border(1.dp, Color.Black)
-                                    .clickable { selectedLesson = lesson },
-                                contentAlignment = Alignment.Center
+                        Box(
+                            modifier = Modifier
+                                .offset(x = leftOffset.dp)
+                                .width(boxWidth.dp)
+                                .height(rowHeight)
+                                .background(Color(0xFFBBDEFB))
+                                .border(1.dp, Color.Black)
+                                .clickable { selectedLesson = lesson },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.padding(4.dp)
                             ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier.padding(4.dp)
-                                ) {
-                                    Text(lesson.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                                    Text(lesson.teacherName, style = MaterialTheme.typography.bodySmall)
-                                    Text("${lesson.begin} - ${lesson.end}", style = MaterialTheme.typography.labelSmall)
-                                }
+                                Text(
+                                    lesson.title,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black
+                                )
+                                Text(
+                                    lesson.teacherName,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.Black
+                                )
+                                Text(
+                                    "${lesson.begin} - ${lesson.end}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color.Black
+                                )
                             }
                         }
                     }
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(1.dp),
+                        color = Color.LightGray
+                    )
                 }
             }
         }
@@ -171,11 +199,4 @@ fun LessonGrid(selectedWeek: Int, modifier: Modifier = Modifier) {
             }
         )
     }
-}
-
-fun getDateForDay(week: Int, dayIndex: Int): String {
-    val baseDate = LocalDate.of(2025, 6, 30) // 1. haftanın pazartesi
-    val daysToAdd = (week - 1) * 7 + dayIndex
-    val targetDate = baseDate.plusDays(daysToAdd.toLong())
-    return targetDate.format(DateTimeFormatter.ofPattern("d MMM"))
 }

@@ -131,9 +131,9 @@ object LessonRepository {
     )
 }
 
-fun getDateFor(week: Int, day: Int): String {
-    val startDate = LocalDate.of(2025, 6, 30)
-    val date = startDate.plusWeeks((week - 1).toLong()).plusDays(day.toLong())
-    val formatter = DateTimeFormatter.ofPattern("d MMM", Locale.forLanguageTag("tr"))
-    return date.format(formatter)  // Örnek: "01 Temmuz 2025"
+fun getDateForDay(week: Int, dayIndex: Int): String {
+    val baseDate = LocalDate.of(2025, 6, 30) // 1. haftanın pazartesi
+    val daysToAdd = (week - 1) * 7 + dayIndex
+    val targetDate = baseDate.plusDays(daysToAdd.toLong())
+    return targetDate.format(DateTimeFormatter.ofPattern("d MMM"))
 }
